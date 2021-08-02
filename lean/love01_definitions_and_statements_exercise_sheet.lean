@@ -21,8 +21,11 @@ be negative are represented by 0. For example:
     `sub 7 2 = 5`
     `sub 2 7 = 0` -/
 
-def sub : ℕ → ℕ → ℕ :=
-sorry
+def sub : ℕ → ℕ → ℕ
+| 0 m := 0
+| n 0 := n
+| (nat.succ n) (nat.succ m) := sub n m
+
 
 /- 1.2. Check that your function works as expected. -/
 
@@ -67,6 +70,13 @@ def some_env : string → ℤ
 | _   := 201
 
 #eval eval some_env (aexp.var "x")   -- expected: 3
+#eval eval some_env (aexp.add (aexp.var "x") (aexp.num 1))
+#eval eval some_env (aexp.sub (aexp.var "x") (aexp.num 5))
+#eval eval some_env (aexp.mul (aexp.var "x") (aexp.num 2))
+#eval eval some_env (aexp.mul (aexp.num 2) (aexp.var "x"))
+#eval eval some_env (aexp.div (aexp.num 6) (aexp.var "x"))
+#eval eval some_env (aexp.div (aexp.num 6) (aexp.num 0))
+
 -- invoke `#eval` here
 
 /- 2.2. The following function simplifies arithmetic expressions involving
@@ -78,6 +88,15 @@ def simplify : aexp → aexp
 | (aexp.add (aexp.num 0) e₂) := simplify e₂
 | (aexp.add e₁ (aexp.num 0)) := simplify e₁
 -- insert the missing cases here
+| (aexp.sub (aexp.num 0) e₂) := simplify (aexp.num 0)
+| (aexp.sub e₂ (aexp.num 0)) := simplify e₂
+| (aexp.mul e₂ (aexp.num 1)) := simplify e₂
+| (aexp.mul (aexp.num 1) e₂) := simplify e₂
+| (aexp.mul e₂ (aexp.num 0)) := simplify (aexp.num 0)
+| (aexp.mul (aexp.num 0) e₂) := simplify (aexp.num 0)
+| (aexp.div (aexp.num 0) e₂) := simplify (aexp.num 0)
+| (aexp.div e₂ (aexp.num 0)) := simplify (aexp.num 0)
+| (aexp.div e₂ (aexp.num 1)) := simplify e₂
 -- catch-all cases below
 | (aexp.num i)               := aexp.num i
 | (aexp.var x)               := aexp.var x
@@ -91,7 +110,7 @@ that the simplified expression should have the same semantics, with respect to
 `eval`, as the original expression. -/
 
 lemma simplify_correct (env : string → ℤ) (e : aexp) :
-  true :=   -- replace `true` by your lemma statement
+  (eval env e) = (eval env (simplify e)) :=
 sorry
 
 
@@ -112,18 +131,18 @@ def K : α → β → α :=
 λa b, a
 
 def C : (α → β → γ) → β → α → γ :=
-sorry
+λf, λg, λh, f h g
 
 def proj_1st : α → α → α :=
-sorry
+λf, λf, f
 
 /- Please give a different answer than for `proj_1st`. -/
 
 def proj_2nd : α → α → α :=
-sorry
+λf, λg, g
 
 def some_nonsense : (α → β → γ) → α → (α → γ) → β → γ :=
-sorry
+λf, λg, λh, λs, h g
 
 /- 3.2. Show the typing derivation for your definition of `C` above, on paper
 or using ASCII or Unicode art. You might find the characters `–` (to draw

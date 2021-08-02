@@ -254,7 +254,8 @@ Recursive procedure:
 constants α β γ : Type
 
 def some_fun_of_type : (α → β → γ) → ((β → α) → β) → α → γ :=
-λf g a, f a (g (λb, a))
+λf, λg, λh, f h (g (λj, h))
+-- λf g a, f a (g (λb, a))
 
 
 /- ## Type Definitions
@@ -379,6 +380,7 @@ def append₂ {α : Type} : list α → list α → list α
 #eval append₂ [3, 1] [4, 1, 5]
 
 #check @append₂
+#eval append₂ [3, 1] [4, 1, 5]
 #eval @append₂ _ [3, 1] [4, 1, 5]
 
 def append₃ {α : Type} : list α → list α → list α
