@@ -215,6 +215,16 @@ end
 lemma not_not_intro₂ (a : Prop) :
   a → ¬¬ a :=
 begin
+  intro ha,
+  apply not.intro,
+  intro hna,
+  apply hna,
+  assumption,
+end
+
+lemma not_not_intro₃ (a : Prop) :
+  a → ¬¬ a :=
+begin
   intros ha hna,
   apply hna,
   exact ha
@@ -322,11 +332,43 @@ lemma add_succ (m n : ℕ) :
   add (nat.succ m) n = nat.succ (add m n) :=
 begin
   induction' n,
+  {rw add, rw add,},
+  {rw add, rw add, rw ih,}
+end
+
+lemma add_succ₂ (m n : ℕ) :
+  add (nat.succ m) n = nat.succ (add m n) :=
+begin
+  induction' n,
   { refl },
   { simp [add, ih] }
 end
 
+lemma rev_add (m : ℕ) :
+  add 0 m = add m 0 :=
+begin
+  induction' m,
+  {rw add,},
+  {rw add, rw ih, rw add, rw add,}
+end
+
+lemma rev_add_0 (m : ℕ) :
+  add 0 m = m :=
+begin
+  induction' m,
+  {rw add,},
+  {rw add, rw ih}
+end
+
 lemma add_comm (m n : ℕ) :
+  add m n = add n m :=
+begin
+  induction' n,
+  {rw add, rw rev_add_0, },
+  {rw add, rw ih, rw add_succ,}
+end
+
+lemma add_comm₃ (m n : ℕ) :
   add m n = add n m :=
 begin
   induction' n,

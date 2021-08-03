@@ -21,35 +21,67 @@ Section 2.3 in the Hitchhiker's Guide. -/
 
 lemma I (a : Prop) :
   a → a :=
-sorry
+begin
+  intro ha,
+  exact ha
+end
 
 lemma K (a b : Prop) :
   a → b → b :=
-sorry
+begin
+  intros ha hb,
+  exact hb
+end
 
 lemma C (a b c : Prop) :
   (a → b → c) → b → a → c :=
-sorry
+begin
+  intro haibic,
+  intro hb,
+  intro ha,
+  apply haibic,
+  {apply ha,},
+  {apply hb}
+end
 
 lemma proj_1st (a : Prop) :
   a → a → a :=
-sorry
+begin
+  intros ha1 ha2,
+  exact ha1,
+end
 
 /- Please give a different answer than for `proj_1st`: -/
 
 lemma proj_2nd (a : Prop) :
   a → a → a :=
-sorry
+begin
+  intros ha1 ha2,
+  exact ha2,
+end
 
 lemma some_nonsense (a b c : Prop) :
   (a → b → c) → a → (a → c) → b → c :=
-sorry
+begin
+  intros haibic ha haic hb,
+  apply haic,
+  apply ha,
+end
 
 /- 1.2. Prove the contraposition rule using basic tactics. -/
 
 lemma contrapositive (a b : Prop) :
   (a → b) → ¬ b → ¬ a :=
-sorry
+begin
+  intros haib,
+  rw not_def,
+  rw not_def,
+  intro hnb,
+  intro ha,
+  apply hnb,
+  apply haib,
+  exact ha
+end
 
 /- 1.3. Prove the distributivity of `∀` over `∧` using basic tactics.
 
@@ -59,7 +91,22 @@ necessary. -/
 
 lemma forall_and {α : Type} (p q : α → Prop) :
   (∀x, p x ∧ q x) ↔ (∀x, p x) ∧ (∀x, q x) :=
-sorry
+begin
+  apply iff.intro,
+  {intro hpq,
+   apply and.intro,
+   {intro x,
+    apply and.elim_left,
+    apply hpq,},
+   {intro x,
+    apply and.elim_right,
+    apply hpq,}},
+  {intro h,
+   intro x,
+   apply and.intro,
+   {apply and.elim_left h,},
+   {apply and.elim_right h,}}
+end
 
 
 /- ## Question 2: Natural Numbers
@@ -71,22 +118,38 @@ sorry
 
 lemma mul_zero (n : ℕ) :
   mul 0 n = 0 :=
-sorry
+begin
+  induction' n,
+  {rw mul},
+  {rw mul, rw ih, rw add,}
+end
 
 lemma mul_succ (m n : ℕ) :
   mul (nat.succ m) n = add (mul m n) n :=
-sorry
+begin
+  induction' n,
+  {simp [mul, add],},
+  {simp [mul, add, ih, add_succ, add_assoc], }
+end
 
 /- 2.2. Prove commutativity and associativity of multiplication using the
 `induction'` tactic. Choose the induction variable carefully. -/
 
 lemma mul_comm (m n : ℕ) :
   mul m n = mul n m :=
-sorry
+begin
+  induction' n,
+  {rw mul, rw mul_zero,},
+  {rw mul, rw ih, rw mul_succ, rw add_comm,}
+end  
 
 lemma mul_assoc (l m n : ℕ) :
   mul (mul l m) n = mul l (mul m n) :=
-sorry
+begin
+  induction' n,
+  {rw mul, rw mul, rw mul,},
+  {simp [mul, mul_add, ih]}
+end
 
 /- 2.3. Prove the symmetric variant of `mul_add` using `rw`. To apply
 commutativity at a specific position, instantiate the rule by passing some
@@ -94,7 +157,11 @@ arguments (e.g., `mul_comm _ l`). -/
 
 lemma add_mul (l m n : ℕ) :
   mul (add l m) n = add (mul n l) (mul n m) :=
-sorry
+begin
+  induction' n,
+  {rw mul, rw mul_zero, rw mul_zero, rw add},
+  {simp [mul, ih, mul_add, mul_comm], }
+end
 
 
 /- ## Question 3 (**optional**): Intuitionistic Logic
@@ -124,13 +191,42 @@ and similarly for `peirce`. -/
 
 lemma peirce_of_em :
   excluded_middle → peirce :=
-sorry
+begin
+  rw excluded_middle,
+  rw peirce,
+  intro em,
+  intros a b,
+  apply or.elim (em a),
+  {intros ha haba,
+   exact ha},
+  {rw not_def,
+   intros hna haba,
+   apply haba,
+   intros ha,
+   apply false.elim,
+   apply hna,
+   assumption,
+  }
+end
 
 /- 3.2 (**optional**). Prove the following implication using tactics. -/
 
 lemma dn_of_peirce :
   peirce → double_negation :=
-sorry
+begin
+  rw peirce,
+  rw double_negation,
+  intro h,
+  intro a,
+  rw not_def,
+  rw not_def,
+  intro nna,
+  apply h a false,
+  intro aif,
+  apply false.elim,
+  apply nna,
+  exact aif,
+end
 
 /- We leave the missing implication for the homework: -/
 
@@ -138,7 +234,25 @@ namespace sorry_lemmas
 
 lemma em_of_dn :
   double_negation → excluded_middle :=
-sorry
+begin
+  rw double_negation,
+  rw excluded_middle,
+  intro h,
+  intro a,
+  apply h,
+  rw not_def,
+  rw not_def,
+  intro horf,
+  apply horf,
+  apply or.intro_left,
+  apply h,
+  rw not_def, rw not_def,
+  intro haf,
+  apply horf,
+  apply or.intro_right,
+  rw not_def,
+  assumption,
+end
 
 end sorry_lemmas
 
