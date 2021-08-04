@@ -221,7 +221,26 @@ definitions in a forward fashion.
 Observe that the syntax for the tactic `let` is slightly different than for the
 structured proof command `let`, with `,` instead of `in`. -/
 
+
 lemma prop_comp₃ (a b c : Prop) (hab : a → b) (hbc : b → c) :
+  a → c :=
+begin
+  assume ha,
+  apply hbc,
+  apply hab,
+  apply ha,
+end
+
+lemma prop_comp₄ (a b c : Prop) (hab : a → b) (hbc : b → c) :
+  a → c :=
+begin
+  assume ha,
+  have hb : b := hab ha,
+  have hc : c := hbc hb,
+  assumption
+end
+
+lemma prop_comp₅ (a b c : Prop) (hab : a → b) (hbc : b → c) :
   a → c :=
 begin
   intro ha,
