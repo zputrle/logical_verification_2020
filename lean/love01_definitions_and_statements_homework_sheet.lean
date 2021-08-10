@@ -80,6 +80,8 @@ the preface in the Hitchhiker's Guide.
 
 Hint: Take a look at `reverse_reverse` from the demonstration file. -/
 
+#check sorry_lemmas.reverse_reverse
+
 lemma append_comm {α : Type} (xs ys zs : list α) : 
     append₂ (append₂ xs ys) zs = append₂ xs (append₂ ys zs) :=
 sorry
@@ -91,8 +93,6 @@ lemma reverse_distr_over_append {α : Type} (xs ys zs : list α) :
 sorry
 
 #check reverse_distr_over_append
-
-#check sorry_lemmas.reverse_reverse
 
 -- enter your lemma statements here
 
@@ -111,16 +111,16 @@ while constructing a term. By hovering over `_`, you will see the current
 logical context. -/
 
 def B : (α → β) → (γ → α) → γ → β :=
-sorry
+    λa, λb, λc, a (b c)
 
 def S : (α → β → γ) → (α → β) → α → γ :=
-sorry
+    λa, λb, λc, a c (b c)
 
 def more_nonsense : (γ → (α → β) → α) → γ → β → α :=
-sorry
+    λa, λb, λc, (a b) (λt, c)
 
 def even_more_nonsense : (α → α → β) → (β → γ) → α → β → γ :=
-sorry
+    λa, λb, λc, λd, b (a c c)
 
 /- 3.2 (1 point). Complete the following definition.
 
@@ -130,7 +130,7 @@ follow the procedure described in the Hitchhiker's Guide.
 Note: Peirce is pronounced like the English word "purse". -/
 
 def weak_peirce : ((((α → β) → α) → α) → β) → β :=
-sorry
+    λa, a (λb, b (λc, a (λk,c)))
 
 /- 3.3 (2 points). Show the typing derivation for your definition of `S` above,
 using ASCII or Unicode art. You might find the characters `–` (to draw
