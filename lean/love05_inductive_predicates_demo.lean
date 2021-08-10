@@ -303,6 +303,9 @@ end
 #check classical.em
 #print or
 
+-- lemma cases_classical_em_example' {α : Type} (a : α) (p q : α → Prop) : q a := sorry
+-- #check cases_classical_em_example'
+
 lemma cases_classical_em_example {α : Type} (a : α)
     (p q : α → Prop) :
   q a :=
@@ -476,6 +479,18 @@ inductive is_full {α : Type} : btree α → Prop
     (hiff : l = btree.empty ↔ r = btree.empty) :
   is_full (btree.node a l r)
 
+lemma is_full_singleton' {α : Type} (a : α) :
+  is_full (btree.node a btree.empty btree.empty) :=
+begin
+  exact (is_full.node
+    a
+    btree.empty
+    btree.empty
+    is_full.empty
+    is_full.empty
+    (by refl))
+end
+
 lemma is_full_singleton {α : Type} (a : α) :
   is_full (btree.node a btree.empty btree.empty) :=
 begin
@@ -490,6 +505,24 @@ lemma is_full_mirror {α : Type} (t : btree α)
   is_full (mirror t) :=
 begin
   induction' ht,
+  {rw mirror, exact is_full.empty,},
+  {rw mirror, apply is_full.node,
+    {assumption,},
+    {assumption,},
+    {apply iff.intro,
+     intro h,
+     cases' t,
+     {cc,},
+     {simp [mirror], sorry}}
+  }
+end
+
+
+lemma is_full_mirror {α : Type} (t : btree α)
+    (ht : is_full t) :
+  is_full (mirror t) :=
+begin
+  induction' ht,
   case empty {
     exact is_full.empty },
   case node : a l r hl hr hiff ih_l ih_r {
@@ -497,7 +530,9 @@ begin
     apply is_full.node,
     { exact ih_r },
     { exact ih_l },
-    { simp [mirror_eq_empty_iff, *] } }
+    { simp [mirror_eq_empty_iff, *]} }
+
+    -- { simp [mirror_eq_empty_iff, *] } }
 end
 
 lemma is_full_mirror₂ {α : Type} :

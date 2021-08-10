@@ -21,6 +21,8 @@ def accurev {α : Type} : list α → list α → list α
 | as []        := as
 | as (x :: xs) := accurev (x :: as) xs
 
+#eval @accurev ℕ [] (1::2::3::4::[])
+
 /- 1.1. Our intention is that `accurev [] xs` should be equal to `reverse xs`.
 But if we start an induction, we quickly see that the induction hypothesis is
 not strong enough. Start by proving the following generalization (using the
@@ -28,13 +30,36 @@ not strong enough. Start by proving the following generalization (using the
 
 lemma accurev_eq_reverse_append {α : Type} :
   ∀as xs : list α, accurev as xs = reverse xs ++ as :=
-sorry
+begin
+  intros as xs,
+  induction' xs,
+  case nil {
+    refl,
+  },
+  case cons {
+    induction' as,
+    case nil {
+      simp [ih, reverse, accurev],
+    },
+    case cons {
+      simp [ih, ih_as, reverse, accurev],
+    }
+  }
+end
 
 /- 1.2. Derive the desired equation. -/
 
 lemma accurev_eq_reverse {α : Type} (xs : list α) :
   accurev [] xs = reverse xs :=
-sorry
+begin
+  induction' xs,
+  case nil {
+    refl,
+  },
+  case cons {
+    simp [accurev, reverse, ih, accurev_eq_reverse_append],
+  }
+end
 
 /- 1.3. Prove the following property.
 
@@ -42,7 +67,11 @@ Hint: A one-line inductionless proof is possible. -/
 
 lemma accurev_accurev {α : Type} (xs : list α) :
   accurev [] (accurev [] xs) = xs :=
-sorry
+begin
+  induction' xs,
+  {refl},
+  {simp [ih, accurev, accurev_eq_reverse, reverse_reverse]}
+end
 
 /- 1.4. Prove the following lemma by structural induction, as a "paper" proof.
 This is a good exercise to develop a deeper understanding of how structural
@@ -69,6 +98,16 @@ function definition or an introduction rule for an inductive predicate. -/
 
 -- enter your paper proof here
 
+/- show ∀as xs : list α, accurev as xs = reverse xs ++ as by induction on xs
+
+(base case) xs = []
+  ∀as : accurev as [] = reverse [] ++ as by def. of accurev and reverse
+  ∀as : as = as
+
+(induction case) IH: ∀as xs : list α, accurev as xs = reverse xs ++ as
+  ∀as x::xs : list α, accurev as x::xs = reverse x::xs ++
+  ∀as x::xs : list α, reverse x::xs ++ as  = reverse x::xs ++ as
+    by def. of accurev_eq_reverse_append -/
 
 /- ## Question 2: Drop and Take
 
@@ -87,8 +126,10 @@ at the front of a list.
 To avoid unpleasant surprises in the proofs, we recommend that you follow the
 same recursion pattern as for `drop` above. -/
 
-def take {α : Type} : ℕ → list α → list α :=
-sorry
+def take {α : Type} : ℕ → list α → list α
+| 0       xs        := []
+| (_ + 1) []        := []
+| (m + 1) (x :: xs) := x :: (take m xs)
 
 #eval take 0 [3, 7, 11]   -- expected: []
 #eval take 1 [3, 7, 11]   -- expected: [3]
@@ -104,11 +145,26 @@ attribute. -/
 
 @[simp] lemma drop_nil {α : Type} :
   ∀n : ℕ, drop n ([] : list α) = [] :=
-sorry
+begin
+  intro n,
+  induction' n,
+  {refl},
+  {rw drop}
+end
+
+lemma drop_nil₂ {α : Type} :
+  ∀n : ℕ, drop n ([] : list α) = []
+| 0 :=  by rw drop
+| (n + 1) := by rw drop
 
 @[simp] lemma take_nil {α : Type} :
   ∀n : ℕ, take n ([] : list α) = [] :=
-sorry
+begin
+  intro n,
+  induction' n,
+  {refl},
+  {rw take}
+end
 
 /- 2.3. Follow the recursion pattern of `drop` and `take` to prove the
 following lemmas. In other words, for each lemma, there should be three cases,
@@ -121,16 +177,35 @@ Hint: The `refl` tactic might be useful in the third case of `drop_drop`. -/
 
 lemma drop_drop {α : Type} :
   ∀(m n : ℕ) (xs : list α), drop n (drop m xs) = drop (n + m) xs
-| 0       n xs        := by refl
+| 0       _ xs        := by refl
+| (nat.succ _) _ []        := begin simp [drop], end
+| (nat.succ m) _ (x::xs)        := begin simp [drop, drop_drop], refl, end
 -- supply the two missing cases here
 
 lemma take_take {α : Type} :
   ∀(m : ℕ) (xs : list α), take m (take m xs) = take m xs :=
-sorry
+begin
+  intro m,
+  intro xs,
+  induction' m,
+  {refl},
+  {induction' xs,
+    {refl,},
+    {simp [ih, ih_xs, take],}}
+end
 
 lemma take_drop {α : Type} :
   ∀(n : ℕ) (xs : list α), take n xs ++ drop n xs = xs :=
-sorry
+begin
+  intro n,
+  intro xs,
+  induction' n,
+  {refl},
+  {induction' xs,
+    {refl,},
+    {simp [ih, ih_xs, take, drop]}
+  }
+end
 
 
 /- ## Question 3: A Type of λ-Terms
@@ -144,12 +219,19 @@ by the following context-free grammar:
 
 -- enter your definition here
 
+inductive term : Type
+| var : string → term
+| lam : string → term → term
+| app : term → term → term
+
 /- 3.2. Register a textual representation of the type `term` as an instance of
 the `has_repr` type class. Make sure to supply enough parentheses to guarantee
 that the output is unambiguous. -/
 
 def term.repr : term → string
--- enter your answer here
+| (term.var s) := s
+| (term.lam s tr) := "(lam " ++ s ++ " . " ++ (term.repr tr) ++ ")"
+| (term.app tr1 tr2) := "(" ++ (term.repr tr1) ++ " " ++ (term.repr tr2) ++ ")"
 
 @[instance] def term.has_repr : has_repr term :=
 { repr := term.repr }
