@@ -19,8 +19,12 @@ namespace LoVe
 1.1 (1 point). Define the function `fib` that computes the Fibonacci
 numbers. -/
 
-def fib : ℕ → ℕ :=
-sorry
+#check nat
+
+def fib : ℕ → ℕ
+| 0 := 0
+| 1 := 1
+| (nat.succ (nat.succ n)) := (fib n) + (fib (nat.succ n))
 
 /- 1.2 (0 points). Check that your function works as expected. -/
 
@@ -58,6 +62,10 @@ type inference. -/
 
 #eval reverse ([] : list ℕ)   -- expected: []
 #eval reverse [1, 3, 5]       -- expected: [5, 3, 1]
+#eval reverse [1, 1, 1]
+#eval reverse [1, 2, 2, 1]
+#eval reverse [1, 2, 2, 3]
+#eval reverse [9, 8, 7, 6, 5, 4, 3, 2, 1]
 -- invoke `#eval` here
 
 /- 2.2 (2 points). State (without proving them) the following properties of
@@ -71,6 +79,18 @@ you wonder how to enter the symbol `₂`, have a look at the table at the end of
 the preface in the Hitchhiker's Guide.
 
 Hint: Take a look at `reverse_reverse` from the demonstration file. -/
+
+lemma append_comm {α : Type} (xs ys zs : list α) : 
+    append₂ (append₂ xs ys) zs = append₂ xs (append₂ ys zs) :=
+sorry
+
+#check append_comm
+
+lemma reverse_distr_over_append {α : Type} (xs ys zs : list α) :
+    reverse (append₂ xs ys) = append₂ (reverse ys) (reverse xs) :=
+sorry
+
+#check reverse_distr_over_append
 
 #check sorry_lemmas.reverse_reverse
 
