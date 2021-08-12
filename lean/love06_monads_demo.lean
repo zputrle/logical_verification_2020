@@ -93,6 +93,8 @@ do n2 ← list.nth ns 1,
     do n7 ← list.nth ns 6,
       pure (n2 + n5 + n7)
 
+#check λa, do n2 ← list.nth [1,2,3] a, pure n2
+
 /- The `do`s can be combined: -/
 
 def sum_2_5_7₆ (ns : list ℕ) : option ℕ :=
@@ -305,20 +307,34 @@ def option.catch {α : Type} :
 | option.none     ma' := ma'
 | (option.some a) _   := option.some a
 
+#eval do x ← (@option.some ℕ 5), (option.some x)
+
+#eval option.some 5 <|> option.some 3
+#eval option.none <|> option.some 3
+
+#eval (@option.some ℕ 5) >>= (λa, option.some a) <|> (option.some 3)
+#eval (@option.none ℕ) >>= (λa, option.some a) <|> (option.some 3)
+
+
 @[instance] def option.has_orelse : has_orelse option :=
 { orelse := @option.catch }
-
 
 /- ## Mutable State -/
 
 def action (σ α : Type) :=
 σ → α × σ
 
+#check action
+
 def action.read {σ : Type} : action σ σ
 | s := (s, s)
 
+#check action.read
+
 def action.write {σ : Type} (s : σ) : action σ unit
 | _ := ((), s)
+
+#check action.write
 
 def action.pure {σ α : Type} (a : α) : action σ α
 | s := (a, s)
@@ -328,7 +344,7 @@ def action.bind {σ : Type} {α β : Type} (ma : action σ α)
   action σ β
 | s :=
   match ma s with
-  | (a, s') := f a s'
+  | (a, s') := (f a) s'
   end
 
 @[instance] def action.lawful_monad {σ : Type} :
@@ -374,9 +390,23 @@ def diff_list : list ℕ → action ℕ (list ℕ)
         ns' ← diff_list ns,
         pure (n :: ns')
 
+def diff_list' : list ℕ → action ℕ (list ℕ)
+| []        := pure []
+| (n :: ns) :=
+  let f := 
+    (action.read >>= λprev, (
+      if n < prev then
+        diff_list ns
+      else
+        action.write n >>= λ _,(
+          diff_list ns >>= λ ns',
+          pure (n :: ns')))) in
+  f
+
+#check diff_list [1, 2, 3, 2]
+
 #eval diff_list [1, 2, 3, 2] 0
 #eval diff_list [1, 2, 3, 2, 4, 5, 2] 0
-
 
 /- ## Nondeterminism -/
 
